@@ -4,39 +4,37 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Guardias</title>
-
 <style>
   body{margin:0;font-family:system-ui,Segoe UI,Roboto,Arial;background:#0b1220;color:#e5e7eb}
   header,main{max-width:1100px;margin:auto;padding:18px}
   h1,h2,h3{margin:.2em 0}
   .card{background:#121a2b;border:1px solid rgba(148,163,184,.18);border-radius:14px;padding:14px;margin:12px 0}
-  .row{display:flex;gap:10px;flex-wrap:wrap}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
   input,select,button{padding:10px 12px;border-radius:10px;border:1px solid rgba(148,163,184,.25);background:#0f172a;color:#e5e7eb}
   button{cursor:pointer;font-weight:600}
   button.green{background:rgba(34,197,94,.2);border-color:rgba(34,197,94,.5)}
   button.red{background:rgba(239,68,68,.2);border-color:rgba(239,68,68,.5)}
   .muted{color:#94a3b8;font-size:13px}
-  .pill{display:inline-block;padding:6px 10px;border-radius:999px;border:1px solid rgba(148,163,184,.2);font-size:12px}
+  .pill{display:inline-flex;gap:6px;align-items:center;padding:6px 10px;border-radius:999px;border:1px solid rgba(148,163,184,.2);font-size:12px}
   .grid{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:10px}
   .cell{border:1px solid rgba(148,163,184,.18);border-radius:12px;padding:10px;background:#0f172a}
   .tag{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:6px;padding:6px 8px;border-radius:10px;background:rgba(148,163,184,.08)}
+  hr{border:0;border-top:1px solid rgba(148,163,184,.18);margin:14px 0}
+  #weekPick{padding:4px 8px;border-radius:8px}
 </style>
 </head>
 
 <body>
-
 <header>
   <h1>Calendario de guardias</h1>
   <div class="row">
-
-    <!-- MES DE LA SEMANA -->
+    <!-- ✅ Mes/rango de mes de la semana seleccionada -->
     <span class="pill" id="monthPill">Mes: —</span>
 
-    <!-- SELECTOR DE SEMANA -->
-    <label class="pill" style="display:flex;gap:6px;align-items:center">
+    <!-- ✅ Selector de semana (elige cualquier día y calculamos el lunes) -->
+    <label class="pill">
       Semana:
-      <input type="date" id="weekPick"
-        style="padding:4px 6px;border-radius:8px;background:#0f172a;color:#e5e7eb">
+      <input type="date" id="weekPick">
     </label>
 
     <span class="pill">Sesión: <b id="meName">—</b></span>
@@ -48,72 +46,77 @@
 
 <main>
 
-<!-- LOGIN -->
-<div class="card" id="loginCard">
-  <h2>Entrar</h2>
-  <div class="row">
-    <input id="name" placeholder="Nombre">
-    <input id="password" type="password" placeholder="Contraseña">
-    <button class="green" id="btnLogin">Entrar</button>
-  </div>
-</div>
-
-<!-- ACCIONES USUARIO -->
-<div class="card" id="userActions" style="display:none">
-  <div class="row">
-    <button id="btnLogout">Salir</button>
-    <button id="btnClear" class="red" style="display:none">Limpiar asignaciones</button>
-  </div>
-</div>
-
-<!-- PANEL ADMIN -->
-<div class="card" id="adminPanel" style="display:none">
-  <h2>Panel Admin</h2>
-
-  <h3>Crear usuario</h3>
-  <div class="row">
-    <input id="newUserName" placeholder="Nombre">
-    <select id="newUserRole">
-      <option value="user">user</option>
-      <option value="admin">admin</option>
-    </select>
-  </div>
-  <div class="row">
-    <input id="newUserPass" type="password" placeholder="Contraseña inicial">
-    <button id="btnGenNewUser" class="green">Generar</button>
-    <button id="btnCreateUser" class="green">Crear</button>
+  <!-- LOGIN -->
+  <div class="card" id="loginCard">
+    <h2>Entrar</h2>
+    <div class="row">
+      <input id="name" placeholder="Nombre">
+      <input id="password" type="password" placeholder="Contraseña">
+      <button class="green" id="btnLogin">Entrar</button>
+    </div>
+    <div class="muted">Tip: usa el nombre exacto registrado en la lista blanca.</div>
   </div>
 
-  <hr>
-
-  <h3>Cambiar contraseña</h3>
-  <div class="row">
-    <select id="adminUser"></select>
-    <input id="newPass" type="password" placeholder="Nueva contraseña">
-    <button id="btnGenPass" class="green">Generar</button>
-    <button id="btnSetPass" class="green">Cambiar</button>
+  <!-- ACCIONES USUARIO -->
+  <div class="card" id="userActions" style="display:none">
+    <div class="row">
+      <button id="btnLogout">Salir</button>
+      <button id="btnClear" class="red" style="display:none">Limpiar asignaciones</button>
+    </div>
   </div>
 
-  <hr>
+  <!-- PANEL ADMIN -->
+  <div class="card" id="adminPanel" style="display:none">
+    <h2>Panel Admin</h2>
 
-  <h3>Eliminar usuario</h3>
-  <div class="row">
-    <select id="delUser"></select>
-    <button class="red" id="btnDeleteUser">Eliminar</button>
+    <!-- Crear usuario -->
+    <h3>Crear usuario</h3>
+    <div class="row">
+      <input id="newUserName" placeholder="Nombre">
+      <select id="newUserRole">
+        <option value="user">user</option>
+        <option value="admin">admin</option>
+      </select>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <input id="newUserPass" type="password" placeholder="Contraseña inicial">
+      <button id="btnGenNewUser" class="green">Generar</button>
+      <button id="btnCreateUser" class="green">Crear</button>
+    </div>
+
+    <hr>
+
+    <!-- Cambiar contraseña -->
+    <h3>Cambiar contraseña</h3>
+    <div class="row">
+      <select id="adminUser"></select>
+      <input id="newPass" type="password" placeholder="Nueva contraseña">
+      <button id="btnGenPass" class="green">Generar</button>
+      <button id="btnSetPass" class="green">Cambiar</button>
+    </div>
+
+    <hr>
+
+    <!-- Eliminar usuario -->
+    <h3>Eliminar usuario</h3>
+    <div class="row">
+      <select id="delUser"></select>
+      <button class="red" id="btnDeleteUser">Eliminar</button>
+    </div>
+    <div class="muted">Acción definitiva. Revoca acceso y elimina sus asignaciones.</div>
   </div>
-</div>
 
-<!-- CALENDARIO -->
-<div class="card">
-  <h2>Calendario</h2>
-  <div class="grid" id="grid"></div>
-</div>
+  <!-- CALENDARIO -->
+  <div class="card">
+    <h2>Calendario</h2>
+    <div class="grid" id="grid"></div>
+  </div>
 
 </main>
 
 <script>
 /* ==== CONFIG ==== */
-const GAS_URL = "TU_URL_DEL_WEBAPP";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbyxVrfKs6pZmHhrGUQfLRRdJDFeVkybFrWukmoCuAv5fhncbfmD8wtIiGprbSJncmA7Nw/exec";
 
 /* ==== ESTADO ==== */
 let sessionToken = "";
@@ -127,101 +130,298 @@ const SHIFTS = [
   {id:"t", label:"14:00 – 20:00 h"}
 ];
 
+// Semana seleccionada (ancla: cualquier fecha dentro de la semana)
 let selectedAnchorDate = new Date();
 
 /* ==== HELPERS ==== */
 const $ = s => document.querySelector(s);
 const slotKey = (d,s) => `${d}_${s}`;
 
-/* ==== FECHAS (SEMANA) ==== */
+/* ==== SEMANA / MES ==== */
 function getMonday(d){
   const date = new Date(d);
-  const day = date.getDay();
+  const day = date.getDay(); // 0=Dom,1=Lun,...6=Sáb
   const diff = date.getDate() - day + (day === 0 ? -6 : 1);
   date.setHours(0,0,0,0);
   return new Date(date.setDate(diff));
 }
+
 function formatMonthSpan(monday){
   const start = new Date(monday);
-  const end = new Date(monday); end.setDate(monday.getDate()+6);
-  const sameMonth = start.getMonth()===end.getMonth() && start.getFullYear()===end.getFullYear();
-  const sameYear = start.getFullYear()===end.getFullYear();
+  const end = new Date(monday);
+  end.setDate(monday.getDate() + 6);
 
-  const fmtM = new Intl.DateTimeFormat("es-MX",{month:"long"});
-  const fmtMY = new Intl.DateTimeFormat("es-MX",{month:"short",year:"numeric"});
-  if(sameMonth) return fmtM.format(start);
-  if(sameYear) return `${fmtM.format(start)}–${fmtM.format(end)}`;
-  return `${fmtMY.format(start)}–${fmtMY.format(end)}`;
+  const sameMonth = start.getMonth() === end.getMonth() && start.getFullYear() === end.getFullYear();
+  const sameYear  = start.getFullYear() === end.getFullYear();
+
+  const fmtMonth = new Intl.DateTimeFormat("es-MX", { month:"long" });
+  const fmtMonthYear = new Intl.DateTimeFormat("es-MX", { month:"short", year:"numeric" });
+
+  if (sameMonth) return fmtMonth.format(start);                // "mayo"
+  if (sameYear)  return `${fmtMonth.format(start)}–${fmtMonth.format(end)}`; // "abril–mayo"
+  return `${fmtMonthYear.format(start)}–${fmtMonthYear.format(end)}`;        // "dic 2026–ene 2027"
 }
+
 function updateMonthPill(){
-  $("#monthPill").textContent = `Mes: ${formatMonthSpan(getMonday(selectedAnchorDate))}`;
+  const monday = getMonday(selectedAnchorDate);
+  $("#monthPill").textContent = `Mes: ${formatMonthSpan(monday)}`;
 }
 
-/* ==== API + LOGIN (SIN CAMBIOS) ==== */
-async function apiPost(action,payload={}){ /* … tu código actual … */ }
-async function apiGetState(){ /* … */ }
+function toISODateValue(d){
+  const x = new Date(d);
+  const y = x.getFullYear();
+  const m = String(x.getMonth()+1).padStart(2,"0");
+  const day = String(x.getDate()).padStart(2,"0");
+  return `${y}-${m}-${day}`;
+}
 
-/* ==== CALENDARIO (SOLO encabezados modificados) ==== */
+function loadSelectedWeek(){
+  const saved = localStorage.getItem("guardias_week_anchor");
+  if(saved){
+    const d = new Date(saved);
+    if(!isNaN(d.getTime())) selectedAnchorDate = d;
+  }
+}
+
+function saveSelectedWeek(){
+  localStorage.setItem("guardias_week_anchor", selectedAnchorDate.toISOString());
+}
+
+/* ==== API ==== */
+async function apiPost(action, payload={}) {
+  $("#net").textContent = "...";
+
+  const res = await fetch(GAS_URL, {
+    method: "POST",
+    redirect: "follow",
+    headers: {"Content-Type":"text/plain;charset=utf-8"},
+    body: JSON.stringify({
+      action,
+      payload: { ...payload, sessionToken }
+    })
+  });
+
+  const data = await res.json();
+  if (!data.ok) throw new Error(data.error || "error");
+
+  $("#net").textContent = "ok";
+  return data;
+}
+
+async function apiGetState(){
+  const r = await apiPost("state", {});
+  state = r.state;
+  renderGrid();
+}
+
+/* ==== LOGIN ==== */
+$("#btnLogin").onclick = async () => {
+  try{
+    const r = await apiPost("login", {
+      name: $("#name").value,
+      password: $("#password").value
+    });
+
+    sessionToken = r.sessionToken;
+    me = r.user;
+    myRole = r.role;
+
+    $("#loginCard").style.display = "none";
+    $("#userActions").style.display = "";
+    $("#meName").textContent = me.name;
+    $("#meRole").textContent = myRole;
+
+    if(myRole === "admin"){
+      $("#adminPanel").style.display = "";
+      $("#btnClear").style.display = "";
+      await loadAdminUsers();
+    }
+
+    await apiGetState();
+  }catch(e){
+    alert(e.message);
+    $("#net").textContent = "—";
+  }
+};
+
+$("#btnLogout").onclick = () => {
+  sessionToken = "";
+  me = null;
+  myRole = "user";
+  location.reload();
+};
+
+$("#btnReload").onclick = async () => {
+  if(!sessionToken) return;
+  try{
+    await apiGetState();
+  }catch(e){
+    alert(e.message);
+  }
+};
+
+/* ==== ADMIN ==== */
+async function loadAdminUsers(){
+  const r = await apiPost("listUsers", {});
+  ["adminUser", "delUser"].forEach(id => {
+    const s = $("#"+id);
+    s.innerHTML = "";
+    r.users.forEach(u => {
+      const o = document.createElement("option");
+      o.value = u.name;
+      o.textContent = `${u.name} (${u.role})`;
+      s.appendChild(o);
+    });
+  });
+}
+
+$("#btnGenNewUser").onclick = () => $("#newUserPass").value = genPass();
+$("#btnCreateUser").onclick = async () => {
+  try{
+    await apiPost("adminCreateUser", {
+      targetName: $("#newUserName").value,
+      newPassword: $("#newUserPass").value,
+      role: $("#newUserRole").value
+    });
+    alert("Usuario creado");
+    $("#newUserName").value = "";
+    $("#newUserPass").value = "";
+    await loadAdminUsers();
+  }catch(e){
+    alert(e.message);
+  }
+};
+
+$("#btnGenPass").onclick = () => $("#newPass").value = genPass();
+$("#btnSetPass").onclick = async () => {
+  try{
+    await apiPost("adminSetPassword", {
+      targetName: $("#adminUser").value,
+      newPassword: $("#newPass").value
+    });
+    alert("Contraseña cambiada");
+    $("#newPass").value = "";
+  }catch(e){
+    alert(e.message);
+  }
+};
+
+$("#btnDeleteUser").onclick = async () => {
+  const u = $("#delUser").value;
+  if(!confirm(`¿Eliminar DEFINITIVAMENTE a "${u}"?`)) return;
+  try{
+    await apiPost("adminDeleteUser", { targetName: u });
+    alert("Usuario eliminado");
+    await loadAdminUsers();
+    await apiGetState();
+  }catch(e){
+    alert(e.message);
+  }
+};
+
+$("#btnClear").onclick = async () => {
+  if(!confirm("¿Seguro? Esto borra TODAS las asignaciones.")) return;
+  try{
+    await apiPost("clearAll", {});
+    await apiGetState();
+  }catch(e){
+    alert(e.message);
+  }
+};
+
+/* ==== CALENDARIO ==== */
 function renderGrid(){
-  const g=$("#grid"); g.innerHTML="";
+  const g = $("#grid");
+  g.innerHTML = "";
+
+  // esquina vacía
   g.append(cell(""));
 
-  SHIFTS.forEach(s=>g.append(cell(s.label,true)));
+  // turnos
+  SHIFTS.forEach(s => g.append(cell(s.label, true)));
 
   const monday = getMonday(selectedAnchorDate);
-  const fmt = new Intl.DateTimeFormat("es-MX",{weekday:"long",day:"numeric"});
+  const fmtHeader = new Intl.DateTimeFormat("es-MX", { weekday:"long", day:"numeric" });
 
-  DAYS.forEach((_,di)=>{
-    const d = new Date(monday);
-    d.setDate(monday.getDate()+di);
-    let label = fmt.format(d); label = label[0].toUpperCase()+label.slice(1);
-    g.append(cell(label,true));
+  DAYS.forEach((_, di) => {
+    // Encabezado del día con número de calendario (según semana seleccionada)
+    const dateForDay = new Date(monday);
+    dateForDay.setDate(monday.getDate() + di);
 
-    SHIFTS.forEach(s=>{
-      const c=document.createElement("div"); c.className="cell";
-      const arr=state.assignments[slotKey(di,s.id)]||[];
+    let label = fmtHeader.format(dateForDay); // "lunes 20"
+    label = label.charAt(0).toUpperCase() + label.slice(1); // "Lunes 20"
 
-      arr.forEach(id=>{
-        const m=state.members.find(x=>x.id===id);
+    g.append(cell(label, true));
+
+    // Celdas por turno
+    SHIFTS.forEach(s => {
+      const c = document.createElement("div");
+      c.className = "cell";
+
+      const arr = state.assignments[slotKey(di, s.id)] || [];
+
+      // Asignados
+      arr.forEach(id => {
+        const m = state.members.find(x => x.id === id);
         if(!m) return;
-        const t=document.createElement("div");
-        t.className="tag"; t.textContent=m.name;
-        if(me && (id===me.id || myRole==="admin")){
-          const b=document.createElement("button");
-          b.textContent="Quitar"; b.className="red";
-          b.onclick=()=>apiPost("removeFromSlot",{dayIndex:di,shiftId:s.id,memberId:id}).then(apiGetState);
+
+        const t = document.createElement("div");
+        t.className = "tag";
+        t.textContent = m.name;
+
+        // Solo yo puedo quitarme, admin puede quitar cualquiera
+        if(me && (id === me.id || myRole === "admin")){
+          const b = document.createElement("button");
+          b.textContent = "Quitar";
+          b.className = "red";
+          b.onclick = () => apiPost("removeFromSlot", { dayIndex: di, shiftId: s.id, memberId: id }).then(apiGetState);
           t.appendChild(b);
         }
+
         c.appendChild(t);
       });
 
-      if(me && !arr.includes(me.id) && arr.length<2){
-        const b=document.createElement("button");
-        b.textContent="Asignarme"; b.className="green";
-        b.onclick=()=>apiPost("addToSlot",{dayIndex:di,shiftId:s.id}).then(apiGetState);
+      // Asignarme
+      if(me && !arr.includes(me.id) && arr.length < 2){
+        const b = document.createElement("button");
+        b.textContent = "Asignarme";
+        b.className = "green";
+        b.onclick = () => apiPost("addToSlot", { dayIndex: di, shiftId: s.id }).then(apiGetState);
         c.appendChild(b);
       }
+
       g.append(c);
     });
   });
 }
 
-function cell(t,h){
-  const d=document.createElement("div");
-  d.className="cell"; if(h)d.style.background="#16223a";
-  d.innerHTML="<b>"+t+"</b>"; return d;
+function cell(t, header=false){
+  const d = document.createElement("div");
+  d.className = "cell";
+  if(header) d.style.background = "#16223a";
+  d.innerHTML = "<b>" + t + "</b>";
+  return d;
 }
 
-/* ==== INIT SEMANA ==== */
-$("#weekPick").valueAsDate = selectedAnchorDate;
-$("#weekPick").onchange = e=>{
-  selectedAnchorDate = new Date(e.target.value+"T12:00:00");
+function genPass(){
+  const c = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%";
+  return Array.from({length:10}, () => c[Math.floor(Math.random()*c.length)]).join("");
+}
+
+/* ==== INIT ==== */
+loadSelectedWeek();
+$("#weekPick").value = toISODateValue(selectedAnchorDate);
+$("#weekPick").onchange = e => {
+  // mediodía para evitar desfases por zona horaria
+  selectedAnchorDate = new Date(e.target.value + "T12:00:00");
+  saveSelectedWeek();
   updateMonthPill();
   renderGrid();
 };
+
 updateMonthPill();
+renderGrid();
 </script>
 
 </body>
 </html>
-``
