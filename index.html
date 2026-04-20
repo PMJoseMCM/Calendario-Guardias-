@@ -27,35 +27,100 @@
 
 <header>
   <h1>Calendario de guardias</h1>
-
   <div class="row">
-    <!-- ✅ Mes de la semana -->
+
+    <!-- MES DE LA SEMANA -->
     <span class="pill" id="monthPill">Mes: —</span>
 
-    <!-- ✅ Selector de semana -->
+    <!-- SELECTOR DE SEMANA -->
     <label class="pill" style="display:flex;gap:6px;align-items:center">
       Semana:
       <input type="date" id="weekPick"
-             style="padding:4px 6px;border-radius:8px;background:#0f172a;color:#e5e7eb">
+        style="padding:4px 6px;border-radius:8px;background:#0f172a;color:#e5e7eb">
     </label>
 
     <span class="pill">Sesión: <b id="meName">—</b></span>
     <span class="pill">Rol: <b id="meRole">—</b></span>
     <span class="pill">Estado: <b id="net">—</b></span>
+    <button id="btnReload">Recargar</button>
   </div>
 </header>
 
 <main>
-  <div class="card">
-    <h2>Calendario</h2>
-    <div class="grid" id="grid"></div>
+
+<!-- LOGIN -->
+<div class="card" id="loginCard">
+  <h2>Entrar</h2>
+  <div class="row">
+    <input id="name" placeholder="Nombre">
+    <input id="password" type="password" placeholder="Contraseña">
+    <button class="green" id="btnLogin">Entrar</button>
   </div>
+</div>
+
+<!-- ACCIONES USUARIO -->
+<div class="card" id="userActions" style="display:none">
+  <div class="row">
+    <button id="btnLogout">Salir</button>
+    <button id="btnClear" class="red" style="display:none">Limpiar asignaciones</button>
+  </div>
+</div>
+
+<!-- PANEL ADMIN -->
+<div class="card" id="adminPanel" style="display:none">
+  <h2>Panel Admin</h2>
+
+  <h3>Crear usuario</h3>
+  <div class="row">
+    <input id="newUserName" placeholder="Nombre">
+    <select id="newUserRole">
+      <option value="user">user</option>
+      <option value="admin">admin</option>
+    </select>
+  </div>
+  <div class="row">
+    <input id="newUserPass" type="password" placeholder="Contraseña inicial">
+    <button id="btnGenNewUser" class="green">Generar</button>
+    <button id="btnCreateUser" class="green">Crear</button>
+  </div>
+
+  <hr>
+
+  <h3>Cambiar contraseña</h3>
+  <div class="row">
+    <select id="adminUser"></select>
+    <input id="newPass" type="password" placeholder="Nueva contraseña">
+    <button id="btnGenPass" class="green">Generar</button>
+    <button id="btnSetPass" class="green">Cambiar</button>
+  </div>
+
+  <hr>
+
+  <h3>Eliminar usuario</h3>
+  <div class="row">
+    <select id="delUser"></select>
+    <button class="red" id="btnDeleteUser">Eliminar</button>
+  </div>
+</div>
+
+<!-- CALENDARIO -->
+<div class="card">
+  <h2>Calendario</h2>
+  <div class="grid" id="grid"></div>
+</div>
+
 </main>
 
 <script>
-/* =========================
-   CONFIG Y ESTADO
-========================= */
+/* ==== CONFIG ==== */
+const GAS_URL = "TU_URL_DEL_WEBAPP";
+
+/* ==== ESTADO ==== */
+let sessionToken = "";
+let me = null;
+let myRole = "user";
+let state = { members:[], assignments:{} };
+
 const DAYS = ["Lunes","Martes","Miércoles","Jueves","Viernes","Sábado","Domingo"];
 const SHIFTS = [
   {id:"m", label:"08:00 – 14:00 h"},
@@ -64,98 +129,99 @@ const SHIFTS = [
 
 let selectedAnchorDate = new Date();
 
-/* =========================
-   FECHAS / SEMANAS
-========================= */
+/* ==== HELPERS ==== */
+const $ = s => document.querySelector(s);
+const slotKey = (d,s) => `${d}_${s}`;
 
-// Obtiene el lunes de la semana (Lun–Dom)
+/* ==== FECHAS (SEMANA) ==== */
 function getMonday(d){
   const date = new Date(d);
-  const day = date.getDay();              // 0=Dom ... 6=Sáb
+  const day = date.getDay();
   const diff = date.getDate() - day + (day === 0 ? -6 : 1);
   date.setHours(0,0,0,0);
   return new Date(date.setDate(diff));
 }
-
-// Formatea mes o rango de meses si cruza
 function formatMonthSpan(monday){
   const start = new Date(monday);
-  const end = new Date(monday);
-  end.setDate(monday.getDate() + 6);
+  const end = new Date(monday); end.setDate(monday.getDate()+6);
+  const sameMonth = start.getMonth()===end.getMonth() && start.getFullYear()===end.getFullYear();
+  const sameYear = start.getFullYear()===end.getFullYear();
 
-  const sameMonth = start.getMonth() === end.getMonth() &&
-                    start.getFullYear() === end.getFullYear();
-  const sameYear = start.getFullYear() === end.getFullYear();
-
-  const fmtMonth = new Intl.DateTimeFormat("es-MX",{month:"long"});
-  const fmtMonthYear = new Intl.DateTimeFormat("es-MX",{month:"short",year:"numeric"});
-
-  if(sameMonth) return fmtMonth.format(start);
-  if(sameYear) return `${fmtMonth.format(start)}–${fmtMonth.format(end)}`;
-  return `${fmtMonthYear.format(start)}–${fmtMonthYear.format(end)}`;
+  const fmtM = new Intl.DateTimeFormat("es-MX",{month:"long"});
+  const fmtMY = new Intl.DateTimeFormat("es-MX",{month:"short",year:"numeric"});
+  if(sameMonth) return fmtM.format(start);
+  if(sameYear) return `${fmtM.format(start)}–${fmtM.format(end)}`;
+  return `${fmtMY.format(start)}–${fmtMY.format(end)}`;
 }
-
 function updateMonthPill(){
-  const monday = getMonday(selectedAnchorDate);
-  document.getElementById("monthPill").textContent =
-    `Mes: ${formatMonthSpan(monday)}`;
+  $("#monthPill").textContent = `Mes: ${formatMonthSpan(getMonday(selectedAnchorDate))}`;
 }
 
-// YYYY-MM-DD para input date
-function toISO(d){
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
-}
+/* ==== API + LOGIN (SIN CAMBIOS) ==== */
+async function apiPost(action,payload={}){ /* … tu código actual … */ }
+async function apiGetState(){ /* … */ }
 
-/* =========================
-   CALENDARIO
-========================= */
+/* ==== CALENDARIO (SOLO encabezados modificados) ==== */
 function renderGrid(){
-  const grid = document.getElementById("grid");
-  grid.innerHTML = "";
+  const g=$("#grid"); g.innerHTML="";
+  g.append(cell(""));
 
-  // esquina vacía
-  grid.append(cell(""));
-
-  // turnos
-  SHIFTS.forEach(s => grid.append(cell(s.label,true)));
+  SHIFTS.forEach(s=>g.append(cell(s.label,true)));
 
   const monday = getMonday(selectedAnchorDate);
-  const fmtDay = new Intl.DateTimeFormat("es-MX",{weekday:"long",day:"numeric"});
+  const fmt = new Intl.DateTimeFormat("es-MX",{weekday:"long",day:"numeric"});
 
-  DAYS.forEach((_, di) => {
+  DAYS.forEach((_,di)=>{
     const d = new Date(monday);
     d.setDate(monday.getDate()+di);
-    let label = fmtDay.format(d);
-    label = label.charAt(0).toUpperCase() + label.slice(1);
+    let label = fmt.format(d); label = label[0].toUpperCase()+label.slice(1);
+    g.append(cell(label,true));
 
-    grid.append(cell(label,true));
+    SHIFTS.forEach(s=>{
+      const c=document.createElement("div"); c.className="cell";
+      const arr=state.assignments[slotKey(di,s.id)]||[];
 
-    SHIFTS.forEach(()=> grid.append(cell("")));
+      arr.forEach(id=>{
+        const m=state.members.find(x=>x.id===id);
+        if(!m) return;
+        const t=document.createElement("div");
+        t.className="tag"; t.textContent=m.name;
+        if(me && (id===me.id || myRole==="admin")){
+          const b=document.createElement("button");
+          b.textContent="Quitar"; b.className="red";
+          b.onclick=()=>apiPost("removeFromSlot",{dayIndex:di,shiftId:s.id,memberId:id}).then(apiGetState);
+          t.appendChild(b);
+        }
+        c.appendChild(t);
+      });
+
+      if(me && !arr.includes(me.id) && arr.length<2){
+        const b=document.createElement("button");
+        b.textContent="Asignarme"; b.className="green";
+        b.onclick=()=>apiPost("addToSlot",{dayIndex:di,shiftId:s.id}).then(apiGetState);
+        c.appendChild(b);
+      }
+      g.append(c);
+    });
   });
 }
 
-function cell(text, header=false){
+function cell(t,h){
   const d=document.createElement("div");
-  d.className="cell";
-  if(header) d.style.background="#16223a";
-  d.innerHTML = "<b>"+text+"</b>";
-  return d;
+  d.className="cell"; if(h)d.style.background="#16223a";
+  d.innerHTML="<b>"+t+"</b>"; return d;
 }
 
-/* =========================
-   INIT
-========================= */
-const pick = document.getElementById("weekPick");
-pick.value = toISO(selectedAnchorDate);
-pick.onchange = e => {
+/* ==== INIT SEMANA ==== */
+$("#weekPick").valueAsDate = selectedAnchorDate;
+$("#weekPick").onchange = e=>{
   selectedAnchorDate = new Date(e.target.value+"T12:00:00");
   updateMonthPill();
   renderGrid();
 };
-
 updateMonthPill();
-renderGrid();
 </script>
 
 </body>
 </html>
+``
